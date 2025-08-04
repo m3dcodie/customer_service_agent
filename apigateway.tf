@@ -3,7 +3,7 @@ data "aws_region" "current" {}
 
 # API Gateway REST API
 resource "aws_api_gateway_rest_api" "llm_api" {
-  name        = "llm-api"
+  name        = "cg-api"
   description = "API Gateway for LLM Lambda function"
 }
 
@@ -11,7 +11,7 @@ resource "aws_api_gateway_rest_api" "llm_api" {
 resource "aws_api_gateway_resource" "llm_resource" {
   rest_api_id = aws_api_gateway_rest_api.llm_api.id
   parent_id   = aws_api_gateway_rest_api.llm_api.root_resource_id
-  path_part   = "llm"
+  path_part   = "cg"
 }
 
 # API Gateway POST Method
@@ -145,115 +145,6 @@ resource "aws_api_gateway_integration_response" "post_integration_response" {
   resource_id = aws_api_gateway_resource.llm_resource.id
   http_method = aws_api_gateway_method.llm_post.http_method
   status_code = aws_api_gateway_method_response.post_200.status_code
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-    "method.response.header.Access-Control-Allow-Methods" = "'OPTIONS,POST'",
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-  }
-}
-
-# API Gateway Resource for codegen
-resource "aws_api_gateway_resource" "codegen_resource" {
-  rest_api_id = aws_api_gateway_rest_api.llm_api.id
-  parent_id   = aws_api_gateway_rest_api.llm_api.root_resource_id
-  path_part   = "codegen"
-}
-
-# API Gateway POST Method for codegen
-resource "aws_api_gateway_method" "codegen_post" {
-  rest_api_id      = aws_api_gateway_rest_api.llm_api.id
-  resource_id      = aws_api_gateway_resource.codegen_resource.id
-  http_method      = "POST"
-  authorization    = "NONE"
-  api_key_required = false
-}
-
-# API Gateway Integration with Lambda for codegen
-resource "aws_api_gateway_integration" "codegen_lambda_integration" {
-  rest_api_id = aws_api_gateway_rest_api.llm_api.id
-  resource_id = aws_api_gateway_resource.codegen_resource.id
-  http_method = aws_api_gateway_method.codegen_post.http_method
-
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/${module.llm_lambda.function_arn}/invocations"
-}
-
-# Lambda permission to allow API Gateway to invoke the function for codegen
-resource "aws_lambda_permission" "codegen_api_gateway_permission" {
-  statement_id  = "AllowAPIGatewayInvokeCodegen"
-  action        = "lambda:InvokeFunction"
-  function_name = module.llm_lambda.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.llm_api.execution_arn}/POST/codegen"
-}
-
-# POST Method Response for codegen
-resource "aws_api_gateway_method_response" "codegen_post_200" {
-  rest_api_id = aws_api_gateway_rest_api.llm_api.id
-  resource_id = aws_api_gateway_resource.codegen_resource.id
-  http_method = aws_api_gateway_method.codegen_post.http_method
-  status_code = "200"
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Origin"  = true
-  }
-}
-
-# POST Integration Response for codegen
-resource "aws_api_gateway_integration_response" "codegen_post_integration_response" {
-  rest_api_id = aws_api_gateway_rest_api.llm_api.id
-  resource_id = aws_api_gateway_resource.codegen_resource.id
-  http_method = aws_api_gateway_method.codegen_post.http_method
-  status_code = aws_api_gateway_method_response.codegen_post_200.status_code
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-    "method.response.header.Access-Control-Allow-Methods" = "'OPTIONS,POST'",
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-  }
-}
-
-# OPTIONS Method for codegen (CORS)
-resource "aws_api_gateway_method" "codegen_options_method" {
-  rest_api_id   = aws_api_gateway_rest_api.llm_api.id
-  resource_id   = aws_api_gateway_resource.codegen_resource.id
-  http_method   = "OPTIONS"
-  authorization = "NONE"
-}
-
-resource "aws_api_gateway_method_response" "codegen_options_200" {
-  rest_api_id = aws_api_gateway_rest_api.llm_api.id
-  resource_id = aws_api_gateway_resource.codegen_resource.id
-  http_method = aws_api_gateway_method.codegen_options_method.http_method
-  status_code = "200"
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Origin"  = true
-  }
-}
-
-resource "aws_api_gateway_integration" "codegen_options_integration" {
-  rest_api_id = aws_api_gateway_rest_api.llm_api.id
-  resource_id = aws_api_gateway_resource.codegen_resource.id
-  http_method = aws_api_gateway_method.codegen_options_method.http_method
-  type        = "MOCK"
-
-  request_templates = {
-    "application/json" = "{\"statusCode\": 200}"
-  }
-}
-
-resource "aws_api_gateway_integration_response" "codegen_options_integration_response" {
-  rest_api_id = aws_api_gateway_rest_api.llm_api.id
-  resource_id = aws_api_gateway_resource.codegen_resource.id
-  http_method = aws_api_gateway_method.codegen_options_method.http_method
-  status_code = aws_api_gateway_method_response.codegen_options_200.status_code
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",

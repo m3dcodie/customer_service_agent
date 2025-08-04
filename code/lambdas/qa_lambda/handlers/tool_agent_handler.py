@@ -39,9 +39,10 @@ class ToolAgentHandler:
             return {}
 
     def return_shoe_inventory(self):
-        query = "SELECT ShoeID, BestFitActivity, StyleDesc, ShoeColors, Price, InvCount FROM ShoeInventory"
+        query = "SELECT customerId, customerName, Addr1, Addr2, City, State, Zipcode, PreferredActivity, ShoeSize, OtherInfo FROM CustomerInfo"
         self.cursor.execute(query)
         resp = self.cursor.fetchall()
+        print(resp)
         names = [description[0] for description in self.cursor.description]
         valDict = [{names[i]: item[i] for i in range(len(names))} for item in resp]
         logger.info("Shoe inventory retrieved")

@@ -53,6 +53,6 @@ event = json.dumps({
 }
 )
 
-response = lambda_handler(event, None)
-print("Response:")
-print(response)
+#response = lambda_handler(event, None)
+#print("Response:")
+#print(response)
