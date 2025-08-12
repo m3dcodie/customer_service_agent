@@ -1,12 +1,14 @@
 # Customer Service Agent
 
-> The agent will find customer information, their shoe size, stocks and book order.
+> This customer service AI agent serve customer with their queries on shoes. Find customer information, their shoe size, stocks and book order.
 
 ## Overview
 
-Customer service agent is a serverless application that uses LLM model to interact with the customers. Take their information and prefrences. Book their order.
+customer's can chat with the Customer service AI agent in natual language, the LLM model understand their queries and take action on it. E-g get customer information, show inventory and place order.
 
-![UI](cs-agent.png)
+![UI](cs-agent-1.png)
+![UI](cs-agent-2.png)
+![UI](cs-agent-3.png)
 
 ## Features
 
